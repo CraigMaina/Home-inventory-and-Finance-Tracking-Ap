@@ -24,6 +24,10 @@ export interface User {
   avatarUrl: string;
 }
 
+export interface AuthContextType {
+  user: User;
+}
+
 export interface FinanceCategory {
   categoryId: string;
   name: string;
@@ -52,6 +56,14 @@ export interface InventoryItem {
   expiryDate: string | null;
   lowStockThreshold: number;
   categoryId: string;
+  price?: number;
+}
+
+export interface Ingredient {
+  itemId: string; // Corresponds to InventoryItem.itemId
+  name: string;
+  quantity: number;
+  unit: string;
 }
 
 export interface Recipe {
@@ -60,13 +72,19 @@ export interface Recipe {
   instructions: string[];
   imageUrl: string;
   estimatedCost: number;
-  ingredients: { name: string; quantity: string }[];
+  ingredients: Ingredient[];
+  category: MealType;
+}
+
+export interface Meal {
+  recipe: Recipe;
+  prepared: boolean;
 }
 
 export interface MealPlan {
   date: string;
   meals: {
-    [key in MealType]?: Recipe | null;
+    [key in MealType]?: Meal | null;
   };
 }
 
@@ -91,4 +109,15 @@ export interface ParsedReceipt {
     items: ParsedReceiptItem[];
 }
 
-export type View = 'dashboard' | 'finance' | 'inventory' | 'meal_planner' | 'recipes' | 'savings' | 'receipt_parser' | 'settings' | 'profile';
+export interface Announcement {
+  announcementId: string;
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl: string;
+  content: string;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+  timestamp: string; // ISO string
+}
+
+export type View = 'dashboard' | 'finance' | 'inventory' | 'meal_planner' | 'recipes' | 'savings' | 'receipt_parser' | 'settings' | 'profile' | 'announcements';
