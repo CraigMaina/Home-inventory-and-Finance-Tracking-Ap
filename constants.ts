@@ -1,4 +1,4 @@
-import type { User, Transaction, InventoryItem, Recipe, MealPlan, SavingsGoal, InventoryCategory } from './types';
+import type { User, Transaction, InventoryItem, Recipe, MealPlan, SavingsGoal, InventoryCategory, FinanceCategory } from './types';
 import { Role, TransactionType, MealType } from './types';
 
 export const mockUser: User = {
@@ -9,12 +9,22 @@ export const mockUser: User = {
   avatarUrl: 'https://picsum.photos/seed/user1/100/100',
 };
 
+export const mockFinanceCategories: FinanceCategory[] = [
+    { categoryId: 'fc1', name: 'Groceries', type: TransactionType.Expense },
+    { categoryId: 'fc2', name: 'Salary', type: TransactionType.Income },
+    { categoryId: 'fc3', name: 'Utilities', type: TransactionType.Expense },
+    { categoryId: 'fc4', name: 'Transport', type: TransactionType.Expense },
+    { categoryId: 'fc5', name: 'Dining Out', type: TransactionType.Expense },
+    { categoryId: 'fc6', name: 'Freelance', type: TransactionType.Income },
+];
+
 export const mockTransactions: Transaction[] = [
-  { transactionId: 't1', category: 'Groceries', amount: 75.50, type: TransactionType.Expense, description: 'Weekly shopping at FreshMart', date: '2024-07-28' },
-  { transactionId: 't2', category: 'Salary', amount: 2500.00, type: TransactionType.Income, description: 'Monthly salary', date: '2024-07-25' },
-  { transactionId: 't3', category: 'Utilities', amount: 120.00, type: TransactionType.Expense, description: 'Electricity and Water Bill', date: '2024-07-22' },
-  { transactionId: 't4', category: 'Transport', amount: 45.00, type: TransactionType.Expense, description: 'Monthly bus pass', date: '2024-07-20' },
-  { transactionId: 't5', category: 'Dining Out', amount: 55.20, type: TransactionType.Expense, description: 'Dinner with friends', date: '2024-07-18' },
+  { transactionId: 't1', categoryId: 'fc1', amount: 75.50, type: TransactionType.Expense, description: 'Weekly shopping at FreshMart', date: '2024-07-28' },
+  { transactionId: 't2', categoryId: 'fc2', amount: 2500.00, type: TransactionType.Income, description: 'Monthly salary', date: '2024-07-25' },
+  { transactionId: 't3', categoryId: 'fc3', amount: 120.00, type: TransactionType.Expense, description: 'Electricity and Water Bill', date: '2024-07-22' },
+  { transactionId: 't4', categoryId: 'fc4', amount: 45.00, type: TransactionType.Expense, description: 'Monthly bus pass', date: '2024-07-20' },
+  { transactionId: 't5', categoryId: 'fc5', amount: 55.20, type: TransactionType.Expense, description: 'Dinner with friends', date: '2024-07-18' },
+  { transactionId: 't6', categoryId: 'fc6', amount: 300.00, type: TransactionType.Income, description: 'Web design project', date: '2024-07-15' },
 ];
 
 export const mockInventoryCategories: InventoryCategory[] = [

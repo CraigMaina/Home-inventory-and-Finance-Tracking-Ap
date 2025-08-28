@@ -24,9 +24,15 @@ export interface User {
   avatarUrl: string;
 }
 
+export interface FinanceCategory {
+  categoryId: string;
+  name: string;
+  type: TransactionType;
+}
+
 export interface Transaction {
   transactionId: string;
-  category: string;
+  categoryId: string;
   amount: number;
   type: TransactionType;
   description: string;

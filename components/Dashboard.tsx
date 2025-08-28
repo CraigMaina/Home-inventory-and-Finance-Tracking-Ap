@@ -1,7 +1,8 @@
 
 import React from 'react';
 import Card from './Card';
-import { mockTransactions, mockInventory, mockMealPlan } from '../constants';
+// Fix: Import mockFinanceCategories to look up category names.
+import { mockTransactions, mockInventory, mockMealPlan, mockFinanceCategories } from '../constants';
 import { TransactionType, MealType } from '../types';
 import type { View } from '../types';
 import { WalletIcon, InventoryIcon, MealPlannerIcon, ReceiptIcon } from './icons/IconComponents';
@@ -25,14 +26,17 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveView }) => {
   const today = new Date().toISOString().slice(0, 10);
   const todaysPlan = mockMealPlan.find(plan => plan.date === '2024-07-29'); // Mocking today for demo
 
+  // Fix: Use categoryId to find the category name for grouping expenses.
   const expenseData = mockTransactions
     .filter(t => t.type === TransactionType.Expense)
     .reduce((acc, t) => {
-        const existing = acc.find(item => item.name === t.category);
+        const category = mockFinanceCategories.find(c => c.categoryId === t.categoryId);
+        const categoryName = category ? category.name : 'Uncategorized';
+        const existing = acc.find(item => item.name === categoryName);
         if (existing) {
             existing.expense += t.amount;
         } else {
-            acc.push({ name: t.category, expense: t.amount });
+            acc.push({ name: categoryName, expense: t.amount });
         }
         return acc;
     }, [] as { name: string; expense: number }[]);
