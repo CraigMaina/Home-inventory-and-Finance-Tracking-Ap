@@ -1,0 +1,5 @@
+{
+  "name": "Household Finance & Inventory Web App",
+  "description": "A comprehensive web application for households to track income, expenses, groceries, meal plans, recipes, receipts, and savings goals. It features AI-powered receipt parsing and supports multiple users with role-based access.",
+  "requestFramePermissions": []
+}
