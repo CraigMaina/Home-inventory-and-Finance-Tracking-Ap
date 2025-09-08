@@ -1,13 +1,17 @@
+
 import React, { useState } from 'react';
 import Card from './Card';
+import Modal from './Modal';
 import { mockSavingsGoals } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 import { Role } from '../types';
 import type { SavingsGoal } from '../types';
 
-const defaultNewGoal: Omit<SavingsGoal, 'goalId' | 'currentAmount'> = {
+type NewGoalState = Omit<SavingsGoal, 'goalId' | 'currentAmount' | 'targetAmount'> & { targetAmount: string };
+
+const defaultNewGoal: NewGoalState = {
     name: '',
-    targetAmount: 1000,
+    targetAmount: '1000.00',
     deadline: new Date().toISOString().slice(0, 10),
 };
 
@@ -21,7 +25,7 @@ const Savings: React.FC = () => {
 
   const [isAddFundsModalOpen, setIsAddFundsModalOpen] = useState(false);
   const [editingGoal, setEditingGoal] = useState<SavingsGoal | null>(null);
-  const [fundsToAdd, setFundsToAdd] = useState(0);
+  const [fundsToAdd, setFundsToAdd] = useState('');
 
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -32,12 +36,15 @@ const Savings: React.FC = () => {
 
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newGoal.name || newGoal.targetAmount <= 0) {
+    const targetAmountInCents = Math.round(parseFloat(newGoal.targetAmount) * 100) || 0;
+    if (!newGoal.name || targetAmountInCents <= 0) {
       alert('Please provide a valid name and target amount.');
       return;
     }
     const goalToAdd: SavingsGoal = {
-      ...newGoal,
+      name: newGoal.name,
+      deadline: newGoal.deadline,
+      targetAmount: targetAmountInCents,
       goalId: `g${Date.now()}`,
       currentAmount: 0,
     };
@@ -49,38 +56,28 @@ const Savings: React.FC = () => {
 
   const handleOpenAddFunds = (goal: SavingsGoal) => {
     setEditingGoal(goal);
-    setFundsToAdd(0);
+    setFundsToAdd('');
     setIsAddFundsModalOpen(true);
   };
 
   const handleAddFunds = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingGoal || fundsToAdd <= 0) {
+    const fundsValue = parseFloat(fundsToAdd) || 0;
+    if (!editingGoal || fundsValue <= 0) {
       alert('Please enter a valid amount.');
       return;
     }
+    const fundsInCents = Math.round(fundsValue * 100);
     setGoals(prevGoals =>
       prevGoals.map(g =>
         g.goalId === editingGoal.goalId
-          ? { ...g, currentAmount: g.currentAmount + fundsToAdd }
+          ? { ...g, currentAmount: g.currentAmount + fundsInCents }
           : g
       )
     );
     setIsAddFundsModalOpen(false);
     setEditingGoal(null);
-    showSuccess(`Ksh ${fundsToAdd.toLocaleString()} added to "${editingGoal.name}"!`);
-  };
-
-  const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode; }> = ({ isOpen, onClose, title, children }) => {
-    if (!isOpen) return null;
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 print:hidden">
-        <Card className="w-full max-w-md relative" title={title}>
-          <button onClick={onClose} className="absolute top-6 right-6 text-2xl font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">&times;</button>
-          {children}
-        </Card>
-      </div>
-    );
+    showSuccess(`Ksh ${fundsValue.toLocaleString()} added to "${editingGoal.name}"!`);
   };
 
   return (
@@ -112,8 +109,8 @@ const Savings: React.FC = () => {
               
               <div className="mt-4">
                 <div className="flex justify-between text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    <span>Ksh {goal.currentAmount.toLocaleString()}</span>
-                    <span>Ksh {goal.targetAmount.toLocaleString()}</span>
+                    <span>Ksh {(goal.currentAmount / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                    <span>Ksh {(goal.targetAmount / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-2.5 dark:bg-slate-700">
                   <div 
@@ -143,7 +140,7 @@ const Savings: React.FC = () => {
                  <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label htmlFor="targetAmount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Target Amount (Ksh)</label>
-                        <input type="number" id="targetAmount" min="1" step="0.01" value={newGoal.targetAmount} onChange={e => setNewGoal({...newGoal, targetAmount: parseFloat(e.target.value)})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200" required/>
+                        <input type="text" id="targetAmount" value={newGoal.targetAmount} onChange={e => setNewGoal({...newGoal, targetAmount: e.target.value})} inputMode="decimal" pattern="^\d*(\.\d{0,2})?$" placeholder="1000.00" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200" required/>
                     </div>
                      <div>
                         <label htmlFor="deadline" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Deadline</label>
@@ -163,7 +160,7 @@ const Savings: React.FC = () => {
             <form onSubmit={handleAddFunds} className="mt-4 space-y-4">
                 <div>
                     <label htmlFor="fundsToAdd" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Amount to Add (Ksh)</label>
-                    <input type="number" id="fundsToAdd" min="0.01" step="0.01" value={fundsToAdd} onChange={e => setFundsToAdd(parseFloat(e.target.value))} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200" required/>
+                    <input type="text" id="fundsToAdd" value={fundsToAdd} onChange={e => setFundsToAdd(e.target.value)} inputMode="decimal" pattern="^\d*(\.\d{0,2})?$" placeholder="0.00" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200" required/>
                 </div>
                 <div className="pt-4 flex justify-end gap-2">
                     <button type="button" onClick={() => setIsAddFundsModalOpen(false)} className="bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500">

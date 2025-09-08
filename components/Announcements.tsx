@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import Card from './Card';
+import Modal from './Modal';
 import { useAuth } from '../contexts/AuthContext';
 import { Role } from '../types';
 import type { Announcement } from '../types';
 import { mockAnnouncements } from '../constants';
+import { TrashIcon } from '../icons/IconComponents';
 
 const formatTimeAgo = (isoString: string) => {
     const now = new Date();
@@ -49,6 +50,7 @@ const Announcements: React.FC = () => {
     const [newContent, setNewContent] = useState('');
     const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
     const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+    const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -101,6 +103,12 @@ const Announcements: React.FC = () => {
         setMediaPreview(null);
     }
 
+    const handleDeletePost = () => {
+        if (!announcementToDelete) return;
+        setAnnouncements(prev => prev.filter(a => a.announcementId !== announcementToDelete.announcementId));
+        setAnnouncementToDelete(null);
+    };
+
     return (
         <div className="space-y-6 max-w-3xl mx-auto">
             <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">Announcements</h1>
@@ -143,30 +151,58 @@ const Announcements: React.FC = () => {
             )}
 
             <div className="space-y-6">
-                {announcements.map(announcement => (
-                    <Card key={announcement.announcementId}>
-                        <div className="flex items-center mb-4">
-                            <img src={announcement.authorAvatarUrl} alt={announcement.authorName} className="w-10 h-10 rounded-full object-cover mr-4" />
-                            <div>
-                                <p className="font-semibold text-slate-800 dark:text-slate-200">{announcement.authorName}</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{formatTimeAgo(announcement.timestamp)}</p>
-                            </div>
-                        </div>
-                        {announcement.content && (
-                            <p className="text-slate-700 whitespace-pre-wrap dark:text-slate-300">{announcement.content}</p>
-                        )}
-                        {announcement.mediaUrl && (
-                            <div className="mt-4">
-                                {announcement.mediaType === 'image' ? (
-                                    <img src={announcement.mediaUrl} alt="Announcement media" className="max-h-96 rounded-lg w-full object-contain bg-slate-100 dark:bg-slate-900" />
-                                ) : (
-                                    <video src={announcement.mediaUrl} controls className="max-h-96 rounded-lg w-full" />
+                {announcements.map(announcement => {
+                    const canDelete = user.role === Role.Admin || user.userId === announcement.authorId;
+                    return (
+                        <Card key={announcement.announcementId}>
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center">
+                                    <img src={announcement.authorAvatarUrl} alt={announcement.authorName} className="w-10 h-10 rounded-full object-cover mr-4" />
+                                    <div>
+                                        <p className="font-semibold text-slate-800 dark:text-slate-200">{announcement.authorName}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">{formatTimeAgo(announcement.timestamp)}</p>
+                                    </div>
+                                </div>
+                                {canDelete && (
+                                    <button 
+                                        onClick={() => setAnnouncementToDelete(announcement)}
+                                        className="text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
+                                        aria-label="Delete post"
+                                    >
+                                        <TrashIcon className="w-5 h-5"/>
+                                    </button>
                                 )}
                             </div>
-                        )}
-                    </Card>
-                ))}
+                            {announcement.content && (
+                                <p className="text-slate-700 whitespace-pre-wrap dark:text-slate-300">{announcement.content}</p>
+                            )}
+                            {announcement.mediaUrl && (
+                                <div className="mt-4">
+                                    {announcement.mediaType === 'image' ? (
+                                        <img src={announcement.mediaUrl} alt="Announcement media" className="max-h-96 rounded-lg w-full object-contain bg-slate-100 dark:bg-slate-900" />
+                                    ) : (
+                                        <video src={announcement.mediaUrl} controls className="max-h-96 rounded-lg w-full" />
+                                    )}
+                                </div>
+                            )}
+                        </Card>
+                    );
+                })}
             </div>
+
+            <Modal isOpen={!!announcementToDelete} onClose={() => setAnnouncementToDelete(null)} title="Confirm Deletion">
+                <div className="mt-4">
+                    <p className="text-slate-600 dark:text-slate-400">Are you sure you want to delete this announcement? This action cannot be undone.</p>
+                    <div className="pt-6 flex justify-end gap-2">
+                        <button type="button" onClick={() => setAnnouncementToDelete(null)} className="bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500">
+                            Cancel
+                        </button>
+                        <button onClick={handleDeletePost} className="bg-red-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-red-500">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

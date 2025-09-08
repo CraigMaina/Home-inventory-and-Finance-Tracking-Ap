@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Role, View } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { UserIcon, SettingsIcon, LogoutIcon, ChevronDownIcon } from './icons/IconComponents';
+import { UserIcon, SettingsIcon, LogoutIcon, ChevronDownIcon } from '../icons/IconComponents';
 
 const getRoleDisplayName = (role: Role) => {
   switch (role) {
@@ -22,14 +22,13 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ setCurrentView }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     setIsDropdownOpen(false);
-    alert('You have been logged out.');
-    // In a real app, this would redirect to a login page or clear session state.
+    logout();
   };
 
   // Close dropdown when clicking outside

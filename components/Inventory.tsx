@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Card from './Card';
-import { mockInventoryCategories } from '../constants';
+import Modal from './Modal';
 import type { InventoryItem, InventoryCategory } from '../types';
 import { Role } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -18,32 +18,38 @@ const getExpiryStatus = (expiryDate: string | null): 'expired' | 'expiring-soon'
   return 'good';
 };
 
-const defaultNewItem: Omit<InventoryItem, 'itemId'> = {
+type NewItemState = Omit<InventoryItem, 'itemId' | 'price' | 'quantity' | 'lowStockThreshold'> & { 
+    price: string;
+    quantity: string;
+    lowStockThreshold: string;
+};
+
+const defaultNewItem: NewItemState = {
     name: '',
-    quantity: 1,
+    quantity: '1',
     unit: 'pcs',
     expiryDate: null,
-    lowStockThreshold: 1,
+    lowStockThreshold: '1',
     categoryId: '',
-    price: 0,
+    price: '',
 };
 
 interface InventoryProps {
     inventory: InventoryItem[];
     setInventory: React.Dispatch<React.SetStateAction<InventoryItem[]>>;
+    categories: InventoryCategory[];
+    setCategories: React.Dispatch<React.SetStateAction<InventoryCategory[]>>;
 }
 
-const Inventory: React.FC<InventoryProps> = ({ inventory, setInventory }) => {
+const Inventory: React.FC<InventoryProps> = ({ inventory, setInventory, categories, setCategories }) => {
     const { user } = useAuth();
     const canEdit = user.role === Role.Admin || user.role === Role.Editor;
-
-    const [categories, setCategories] = useState<InventoryCategory[]>(mockInventoryCategories);
 
     const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
     const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
     const [isShoppingListModalOpen, setIsShoppingListModalOpen] = useState(false);
     
-    const [newItem, setNewItem] = useState<Omit<InventoryItem, 'itemId'>>(defaultNewItem);
+    const [newItem, setNewItem] = useState<NewItemState>(defaultNewItem);
     const [newCategoryName, setNewCategoryName] = useState('');
 
     const groupedInventory = useMemo(() => {
@@ -76,10 +82,18 @@ const Inventory: React.FC<InventoryProps> = ({ inventory, setInventory }) => {
             alert("Please fill in the item name and select a category.");
             return;
         }
+        
         const newItemWithId: InventoryItem = {
-            ...newItem,
             itemId: `i${Date.now()}`,
+            name: newItem.name,
+            quantity: parseInt(newItem.quantity, 10) || 0,
+            unit: newItem.unit,
+            expiryDate: newItem.expiryDate,
+            lowStockThreshold: parseInt(newItem.lowStockThreshold, 10) || 0,
+            categoryId: newItem.categoryId,
+            price: newItem.price ? Math.round(parseFloat(newItem.price) * 100) : undefined,
         };
+
         setInventory(prev => [...prev, newItemWithId]);
         setNewItem(defaultNewItem);
         setIsAddItemModalOpen(false);
@@ -137,29 +151,6 @@ const Inventory: React.FC<InventoryProps> = ({ inventory, setInventory }) => {
             printWindow.close();
         }, 250);
     };
-
-    const Modal: React.FC<{
-        isOpen: boolean;
-        onClose: () => void;
-        title: string;
-        children: React.ReactNode;
-        size?: 'md' | 'lg' | 'xl';
-      }> = ({ isOpen, onClose, title, children, size = 'md' }) => {
-        if (!isOpen) return null;
-        const sizeClasses = {
-            md: 'max-w-md',
-            lg: 'max-w-lg',
-            xl: 'max-w-2xl',
-        }
-        return (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 print:hidden">
-            <Card className={`w-full ${sizeClasses[size]}`} title={title}>
-              <button onClick={onClose} className="absolute top-6 right-6 text-2xl font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">&times;</button>
-              {children}
-            </Card>
-          </div>
-        );
-      };
 
     return (
         <div className="space-y-6">
@@ -222,7 +213,7 @@ const Inventory: React.FC<InventoryProps> = ({ inventory, setInventory }) => {
                                                 <div className="text-sm text-slate-700 dark:text-slate-300">{item.quantity} {item.unit}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                                                {item.price ? `Ksh ${item.price.toLocaleString()}` : 'N/A'}
+                                                {item.price ? `Ksh ${(item.price / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                                                 {item.expiryDate ? new Date(item.expiryDate).toLocaleDateString() : 'N/A'}
@@ -263,7 +254,7 @@ const Inventory: React.FC<InventoryProps> = ({ inventory, setInventory }) => {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <label htmlFor="quantity" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Quantity</label>
-                            <input type="number" id="quantity" min="0" value={newItem.quantity} onChange={e => setNewItem({...newItem, quantity: parseInt(e.target.value)})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
+                            <input type="text" id="quantity" value={newItem.quantity} onChange={e => setNewItem({...newItem, quantity: e.target.value})} inputMode="numeric" pattern="\d*" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
                         </div>
                         <div>
                             <label htmlFor="unit" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Unit</label>
@@ -271,16 +262,16 @@ const Inventory: React.FC<InventoryProps> = ({ inventory, setInventory }) => {
                         </div>
                         <div>
                             <label htmlFor="price" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Price (Ksh)</label>
-                            <input type="number" id="price" min="0" step="0.01" value={newItem.price || ''} onChange={e => setNewItem({...newItem, price: parseFloat(e.target.value) || 0})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
+                            <input type="text" id="price" value={newItem.price} onChange={e => setNewItem({...newItem, price: e.target.value})} inputMode="decimal" pattern="^\d*(\.\d{0,2})?$" placeholder="0.00" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
                         </div>
                         <div>
                             <label htmlFor="lowStockThreshold" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Threshold</label>
-                            <input type="number" id="lowStockThreshold" min="0" value={newItem.lowStockThreshold} onChange={e => setNewItem({...newItem, lowStockThreshold: parseInt(e.target.value)})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
+                            <input type="text" id="lowStockThreshold" value={newItem.lowStockThreshold} onChange={e => setNewItem({...newItem, lowStockThreshold: e.target.value})} inputMode="numeric" pattern="\d*" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
                         </div>
                     </div>
                      <div>
                         <label htmlFor="expiryDate" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Expiry Date (Optional)</label>
-                        <input type="date" id="expiryDate" onChange={e => setNewItem({...newItem, expiryDate: e.target.value})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
+                        <input type="date" id="expiryDate" value={newItem.expiryDate || ''} onChange={e => setNewItem({...newItem, expiryDate: e.target.value || null})} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
                     </div>
                     <div className="pt-4 flex justify-end gap-2">
                         <button type="button" onClick={() => setIsAddItemModalOpen(false)} className="bg-slate-200 text-slate-800 font-semibold py-2 px-4 rounded-lg hover:bg-slate-300 transition-colors dark:bg-slate-600 dark:text-slate-200 dark:hover:bg-slate-500">
@@ -328,14 +319,14 @@ const Inventory: React.FC<InventoryProps> = ({ inventory, setInventory }) => {
                                         <tr key={item.itemId}>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900 dark:text-slate-200">{item.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{item.quantityToBuy} {item.unit}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{item.price ? `Ksh ${item.price.toLocaleString()}` : 'N/A'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-slate-700 dark:text-slate-300">{item.price ? `Ksh ${item.subtotal.toLocaleString()}` : 'N/A'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">{item.price ? `Ksh ${(item.price / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-slate-700 dark:text-slate-300">{item.price ? `Ksh ${(item.subtotal / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A'}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
                              <div className="mt-4 text-right font-bold text-lg text-slate-800 dark:text-slate-200 total">
-                                Estimated Total: Ksh {shoppingListTotal.toLocaleString()}
+                                Estimated Total: Ksh {(shoppingListTotal / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </div>
                         </div>
                     ) : (

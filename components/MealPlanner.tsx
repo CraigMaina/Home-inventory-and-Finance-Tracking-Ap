@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import Card from './Card';
+import Modal from './Modal';
 import { MealType, Role } from '../types';
 import type { MealPlan, Meal, InventoryItem, Recipe } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -193,18 +195,6 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ mealPlan, setMealPlan, invent
 
         alert(`"${recipe.name}" marked as prepared. Inventory has been updated.`);
     };
-    
-    const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode; }> = ({ isOpen, onClose, title, children }) => {
-        if (!isOpen) return null;
-        return (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4 print:hidden">
-            <Card className="w-full max-w-lg relative" title={title}>
-              <button onClick={onClose} className="absolute top-6 right-6 text-2xl font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">&times;</button>
-              {children}
-            </Card>
-          </div>
-        );
-      };
 
     return (
         <div className="space-y-6">
@@ -241,6 +231,7 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ mealPlan, setMealPlan, invent
                 isOpen={isAddMealModalOpen} 
                 onClose={() => setIsAddMealModalOpen(false)} 
                 title={`Add ${mealContext?.type || 'Meal'} for ${mealContext?.date ? new Date(mealContext.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''}`}
+                size="lg"
             >
                 <div className="mt-4 max-h-[60vh] overflow-y-auto p-1">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

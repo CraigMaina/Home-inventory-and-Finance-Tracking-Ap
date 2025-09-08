@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
-import Card from './Card';
+import Card from '../components/Card';
 import { parseReceiptWithGemini } from '../services/geminiService';
 import type { ParsedReceipt } from '../types';
 import { Role } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { SparklesIcon, ReceiptIcon } from './icons/IconComponents';
+import { SparklesIcon, ReceiptIcon } from './IconComponents';
 
 const fileToGenerativePart = async (file: File) => {
     const base64EncodedDataPromise = new Promise<string>((resolve) => {
@@ -113,14 +113,14 @@ const ReceiptParser: React.FC = () => {
                                         {parsedData.items.map((item, index) => (
                                             <li key={index} className="flex justify-between items-center text-sm">
                                                 <span className="text-slate-700 dark:text-slate-300">{item.quantity} x {item.itemName}</span>
-                                                <span className="font-medium text-slate-600 dark:text-slate-400">Ksh {item.price.toLocaleString()}</span>
+                                                <span className="font-medium text-slate-600 dark:text-slate-400">Ksh {item.price.toFixed(2)}</span>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
                                 <div className="border-t border-slate-200 dark:border-slate-700 pt-3 mt-3 flex justify-between items-center font-bold text-lg">
                                     <span className="text-slate-800 dark:text-slate-200">Total</span>
-                                    <span className="text-indigo-600 dark:text-indigo-400">Ksh {parsedData.totalAmount.toLocaleString()}</span>
+                                    <span className="text-indigo-600 dark:text-indigo-400">Ksh {parsedData.totalAmount.toFixed(2)}</span>
                                 </div>
                                 <button className="w-full bg-green-600 text-white font-semibold py-3 rounded-lg hover:bg-green-500 transition-colors mt-4 dark:bg-green-700 dark:hover:bg-green-600">
                                     Add as Expense

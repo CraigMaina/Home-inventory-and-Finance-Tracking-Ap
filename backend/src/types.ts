@@ -1,4 +1,3 @@
-
 export enum Role {
   Admin = 'admin',
   Editor = 'editor',
@@ -26,9 +25,7 @@ export interface User {
 }
 
 export interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  user: User;
 }
 
 export interface FinanceCategory {
@@ -43,8 +40,7 @@ export interface Transaction {
   amount: number;
   type: TransactionType;
   description: string;
-  date: string; // ISO string 'YYYY-MM-DD'
-  billId?: string;
+  date: string;
 }
 
 export interface InventoryCategory {
@@ -123,13 +119,3 @@ export interface Announcement {
   mediaType?: 'image' | 'video';
   timestamp: string; // ISO string
 }
-
-export interface Bill {
-  billId: string;
-  name: string;
-  amount: number;
-  dueDate: number; // Day of the month
-  categoryId: string;
-}
-
-export type View = 'dashboard' | 'finance' | 'inventory' | 'meal_planner' | 'recipes' | 'savings' | 'receipt_parser' | 'settings' | 'profile' | 'announcements' | 'user_management' | 'bills';

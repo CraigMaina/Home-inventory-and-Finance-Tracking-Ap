@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Card from './Card';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../services/ThemeContext';
 
 const Settings: React.FC = () => {
     const { theme, toggleTheme } = useTheme();

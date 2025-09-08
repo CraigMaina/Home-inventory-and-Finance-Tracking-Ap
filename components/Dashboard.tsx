@@ -4,8 +4,8 @@ import { mockTransactions, mockFinanceCategories } from '../constants';
 import { TransactionType, Role } from '../types';
 import type { View, InventoryItem } from '../types';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { WalletIcon, InventoryIcon, MealPlannerIcon, ReceiptIcon } from './icons/IconComponents';
+import { useTheme } from '../services/ThemeContext';
+import { WalletIcon, InventoryIcon, MealPlannerIcon, ReceiptIcon } from '../icons/IconComponents';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DashboardProps {
@@ -37,9 +37,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveView, inventory }) => {
         const categoryName = category ? category.name : 'Uncategorized';
         const existing = acc.find(item => item.name === categoryName);
         if (existing) {
-            existing.expense += t.amount;
+            existing.expense += t.amount / 100;
         } else {
-            acc.push({ name: categoryName, expense: t.amount });
+            acc.push({ name: categoryName, expense: t.amount / 100 });
         }
         return acc;
     }, [] as { name: string; expense: number }[]);
@@ -53,14 +53,14 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveView, inventory }) => {
             <div className="bg-green-100 p-3 rounded-full"><WalletIcon className="w-6 h-6 text-green-600" /></div>
             <div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Total Income</p>
-                <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">Ksh {totalIncome.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">Ksh {(totalIncome / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
         </Card>
         <Card className="flex items-center space-x-4">
             <div className="bg-red-100 p-3 rounded-full"><WalletIcon className="w-6 h-6 text-red-600" /></div>
             <div>
                 <p className="text-sm text-slate-500 dark:text-slate-400">Total Expenses</p>
-                <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">Ksh {totalExpense.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-slate-800 dark:text-slate-200">Ksh {(totalExpense / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
             </div>
         </Card>
         <Card className="flex items-center space-x-4">
@@ -87,7 +87,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveView, inventory }) => {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} />
                         <XAxis dataKey="name" tick={{ fill: theme === 'dark' ? '#94a3b8' : '#64748b', fontSize: 12 }} />
                         <YAxis tick={{ fill: theme === 'dark' ? '#94a3b8' : '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
-                        <Tooltip cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }} contentStyle={{ backgroundColor: theme === 'dark' ? '#1e293b' : 'white', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }}/>
+                        <Tooltip cursor={{ fill: 'rgba(241, 245, 249, 0.5)' }} contentStyle={{ backgroundColor: theme === 'dark' ? '#1e293b' : 'white', border: '1px solid #e2e8f0', borderRadius: '0.5rem' }} formatter={(value: number) => `Ksh ${value.toFixed(2)}`}/>
                         <Bar dataKey="expense" fill="#4f46e5" radius={[4, 4, 0, 0]} />
                     </BarChart>
                 </ResponsiveContainer>

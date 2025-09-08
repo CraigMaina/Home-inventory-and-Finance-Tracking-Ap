@@ -1,5 +1,5 @@
 
-import type { User, Transaction, InventoryItem, Recipe, MealPlan, SavingsGoal, InventoryCategory, FinanceCategory, Meal, Announcement } from './types';
+import type { User, Transaction, InventoryItem, Recipe, MealPlan, SavingsGoal, InventoryCategory, FinanceCategory, Meal, Announcement, Bill } from './types';
 import { Role, TransactionType, MealType } from './types';
 
 export const mockUser: User = {
@@ -10,6 +10,31 @@ export const mockUser: User = {
   avatarUrl: 'https://picsum.photos/seed/user1/100/100',
 };
 
+export const mockUsers: User[] = [
+  mockUser,
+  {
+    userId: 'u2',
+    name: 'Jane Smith',
+    email: 'jane.smith@example.com',
+    role: Role.Editor,
+    avatarUrl: 'https://picsum.photos/seed/user2/100/100',
+  },
+  {
+    userId: 'u3',
+    name: 'Bob Johnson',
+    email: 'bob.johnson@example.com',
+    role: Role.Viewer,
+    avatarUrl: 'https://picsum.photos/seed/user3/100/100',
+  },
+   {
+    userId: 'u4',
+    name: 'Sam Wilson',
+    email: 'sam.wilson@example.com',
+    role: Role.Viewer,
+    avatarUrl: 'https://picsum.photos/seed/user4/100/100',
+  },
+];
+
 export const mockFinanceCategories: FinanceCategory[] = [
     { categoryId: 'fc1', name: 'Groceries', type: TransactionType.Expense },
     { categoryId: 'fc2', name: 'Salary', type: TransactionType.Income },
@@ -17,6 +42,8 @@ export const mockFinanceCategories: FinanceCategory[] = [
     { categoryId: 'fc4', name: 'Transport', type: TransactionType.Expense },
     { categoryId: 'fc5', name: 'Dining Out', type: TransactionType.Expense },
     { categoryId: 'fc6', name: 'Freelance', type: TransactionType.Income },
+    { categoryId: 'fc7', name: 'Rent', type: TransactionType.Expense },
+    { categoryId: 'fc8', name: 'Subscriptions', type: TransactionType.Expense },
 ];
 
 export const mockTransactions: Transaction[] = [
@@ -26,6 +53,8 @@ export const mockTransactions: Transaction[] = [
   { transactionId: 't4', categoryId: 'fc4', amount: 5850, type: TransactionType.Expense, description: 'Monthly bus pass', date: '2024-07-20' },
   { transactionId: 't5', categoryId: 'fc5', amount: 7176, type: TransactionType.Expense, description: 'Dinner with friends', date: '2024-07-18' },
   { transactionId: 't6', categoryId: 'fc6', amount: 39000, type: TransactionType.Income, description: 'Web design project', date: '2024-07-15' },
+  { transactionId: 't7', billId: 'b1', categoryId: 'fc7', amount: 50000, type: TransactionType.Expense, description: 'Rent (Part 1)', date: new Date().toISOString().split('T')[0] },
+  { transactionId: 't8', billId: 'b3', categoryId: 'fc3', amount: 3250, type: TransactionType.Expense, description: 'Internet Bill', date: new Date().toISOString().split('T')[0] },
 ];
 
 export const mockInventoryCategories: InventoryCategory[] = [
@@ -128,4 +157,11 @@ export const mockAnnouncements: Announcement[] = [
     mediaType: 'image',
     timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
   },
+];
+
+export const mockBills: Bill[] = [
+    { billId: 'b1', name: 'Rent', amount: 84500, dueDate: 1, categoryId: 'fc7' },
+    { billId: 'b2', name: 'Electricity', amount: 7800, dueDate: 15, categoryId: 'fc3' },
+    { billId: 'b3', name: 'Internet', amount: 3250, dueDate: 20, categoryId: 'fc3' },
+    { billId: 'b4', name: 'Streaming Service', amount: 1300, dueDate: 25, categoryId: 'fc8' },
 ];

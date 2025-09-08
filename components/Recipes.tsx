@@ -1,17 +1,24 @@
 
 import React, { useState } from 'react';
 import Card from './Card';
+import Modal from './Modal';
 import { mockRecipes } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 import { Role, MealType } from '../types';
 import type { Recipe, Ingredient } from '../types';
 
-const initialRecipeState: Omit<Recipe, 'recipeId'> = {
+type NewRecipeIngredient = Omit<Ingredient, 'quantity'> & { quantity: string };
+type NewRecipeState = Omit<Recipe, 'recipeId' | 'estimatedCost' | 'ingredients'> & {
+    estimatedCost: string;
+    ingredients: NewRecipeIngredient[];
+};
+
+const initialRecipeState: NewRecipeState = {
     name: '',
     instructions: [''],
     imageUrl: '',
-    estimatedCost: 0,
-    ingredients: [{ itemId: '', name: '', quantity: 1, unit: 'pcs' }],
+    estimatedCost: '',
+    ingredients: [{ itemId: '', name: '', quantity: '1', unit: 'pcs' }],
     category: MealType.Lunch,
 };
 
@@ -23,7 +30,7 @@ const Recipes: React.FC = () => {
   const [expandedRecipeId, setExpandedRecipeId] = useState<string | null>(null);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newRecipe, setNewRecipe] = useState<Omit<Recipe, 'recipeId'>>(initialRecipeState);
+  const [newRecipe, setNewRecipe] = useState<NewRecipeState>(initialRecipeState);
 
   const categories: (MealType | 'all')[] = ['all', MealType.Breakfast, MealType.Lunch, MealType.Dinner, MealType.Snack];
 
@@ -35,7 +42,7 @@ const Recipes: React.FC = () => {
     setExpandedRecipeId(prevId => (prevId === recipeId ? null : recipeId));
   };
 
-  const handleInputChange = (field: keyof Omit<Recipe, 'recipeId'>, value: any) => {
+  const handleInputChange = (field: keyof NewRecipeState, value: any) => {
     setNewRecipe(prev => ({...prev, [field]: value}));
   };
 
@@ -49,14 +56,14 @@ const Recipes: React.FC = () => {
     }
   };
   
-  const handleIngredientChange = (index: number, field: keyof Ingredient, value: any) => {
+  const handleIngredientChange = (index: number, field: keyof NewRecipeIngredient, value: string) => {
     const updatedIngredients = [...newRecipe.ingredients];
     updatedIngredients[index] = {...updatedIngredients[index], [field]: value};
     setNewRecipe(prev => ({ ...prev, ingredients: updatedIngredients }));
   };
 
   const addIngredient = () => {
-    setNewRecipe(prev => ({...prev, ingredients: [...prev.ingredients, { itemId: '', name: '', quantity: 1, unit: 'pcs'}]}));
+    setNewRecipe(prev => ({...prev, ingredients: [...prev.ingredients, { itemId: '', name: '', quantity: '1', unit: 'pcs'}]}));
   };
 
   const removeIngredient = (index: number) => {
@@ -88,11 +95,16 @@ const Recipes: React.FC = () => {
 
     const finalIngredients = newRecipe.ingredients.map(ing => ({
         ...ing,
+        quantity: parseFloat(ing.quantity) || 0,
         itemId: ing.name.toLowerCase().replace(/\s+/g, '-') || `ing-${Date.now()}`
     }));
 
+    const { estimatedCost, ...rest } = newRecipe;
+    const costInCents = Math.round(parseFloat(estimatedCost) * 100) || 0;
+
     const recipeToAdd: Recipe = {
-        ...newRecipe,
+        ...rest,
+        estimatedCost: costInCents,
         recipeId: `r${Date.now()}`,
         ingredients: finalIngredients
     };
@@ -100,18 +112,6 @@ const Recipes: React.FC = () => {
     setRecipes(prev => [recipeToAdd, ...prev]);
     setNewRecipe(initialRecipeState);
     setIsAddModalOpen(false);
-  };
-  
-  const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode; }> = ({ isOpen, onClose, title, children }) => {
-    if (!isOpen) return null;
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start p-4 overflow-y-auto print:hidden">
-        <Card className="w-full max-w-2xl relative mt-8 mb-8" title={title}>
-          <button onClick={onClose} className="absolute top-6 right-6 text-2xl font-bold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">&times;</button>
-          {children}
-        </Card>
-      </div>
-    );
   };
 
   return (
@@ -150,7 +150,7 @@ const Recipes: React.FC = () => {
                 <div className="p-4 flex flex-col flex-grow">
                   <span className="text-xs font-semibold text-indigo-600 bg-indigo-100 px-2 py-1 rounded-full self-start mb-2 capitalize dark:bg-indigo-900/50 dark:text-indigo-300">{recipe.category}</span>
                   <h4 className="text-lg font-bold text-slate-800 dark:text-slate-200">{recipe.name}</h4>
-                  <p className="text-sm text-slate-500 mb-4 dark:text-slate-400">Estimated Cost: Ksh {recipe.estimatedCost.toLocaleString()}</p>
+                  <p className="text-sm text-slate-500 mb-4 dark:text-slate-400">Estimated Cost: Ksh {(recipe.estimatedCost / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                   
                   <div className="flex-grow">
                     {isExpanded && (
@@ -211,8 +211,8 @@ const Recipes: React.FC = () => {
         )}
       </div>
 
-       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Recipe">
-            <form onSubmit={handleAddRecipe} className="mt-4 space-y-6">
+       <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title="Add New Recipe" size="2xl">
+            <form onSubmit={handleAddRecipe} className="mt-4 space-y-6 max-h-[70vh] overflow-y-auto pr-2">
                 <div>
                     <label htmlFor="recipeName" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Recipe Name</label>
                     <input type="text" id="recipeName" value={newRecipe.name} onChange={e => handleInputChange('name', e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200" required/>
@@ -231,7 +231,7 @@ const Recipes: React.FC = () => {
                     </div>
                     <div>
                         <label htmlFor="cost" className="block text-sm font-medium text-slate-700 dark:text-slate-300">Estimated Cost (Ksh)</label>
-                        <input type="number" id="cost" min="0" step="0.01" value={newRecipe.estimatedCost} onChange={e => handleInputChange('estimatedCost', parseFloat(e.target.value))} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
+                        <input type="text" id="cost" value={newRecipe.estimatedCost} onChange={e => handleInputChange('estimatedCost', e.target.value)} inputMode="decimal" pattern="^\d*(\.\d{0,2})?$" placeholder="0.00" className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
                     </div>
                 </div>
 
@@ -241,7 +241,7 @@ const Recipes: React.FC = () => {
                         {newRecipe.ingredients.map((ing, index) => (
                             <div key={index} className="flex items-center gap-2">
                                 <input type="text" placeholder="Name" value={ing.name} onChange={e => handleIngredientChange(index, 'name', e.target.value)} className="flex-grow w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
-                                <input type="number" placeholder="Qty" value={ing.quantity} min="0" onChange={e => handleIngredientChange(index, 'quantity', parseFloat(e.target.value))} className="w-20 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
+                                <input type="text" placeholder="Qty" value={ing.quantity} onChange={e => handleIngredientChange(index, 'quantity', e.target.value)} inputMode="decimal" pattern="^\d*(\.\d*)?$" className="w-20 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
                                 <input type="text" placeholder="Unit" value={ing.unit} onChange={e => handleIngredientChange(index, 'unit', e.target.value)} className="w-24 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
                                 <button type="button" onClick={() => removeIngredient(index)} className="text-red-500 hover:text-red-700 font-bold text-xl dark:text-red-400 dark:hover:text-red-300">&times;</button>
                             </div>
@@ -254,10 +254,21 @@ const Recipes: React.FC = () => {
                     <legend className="block text-sm font-medium text-slate-700 mb-2 dark:text-slate-300">Instructions</legend>
                      <div className="space-y-2">
                         {newRecipe.instructions.map((step, index) => (
-                             <div key={index} className="flex items-center gap-2">
-                                 <span className="text-slate-500 font-semibold dark:text-slate-400">{index + 1}.</span>
-                                 <input type="text" placeholder={`Step ${index + 1}`} value={step} onChange={e => handleInstructionChange(index, e.target.value)} className="flex-grow w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200"/>
-                                 <button type="button" onClick={() => removeInstruction(index)} className="text-red-500 hover:text-red-700 font-bold text-xl dark:text-red-400 dark:hover:text-red-300">&times;</button>
+                             <div key={index} className="flex items-start gap-2">
+                                 <span className="text-slate-500 font-semibold pt-2 dark:text-slate-400">{index + 1}.</span>
+                                 <textarea
+                                    placeholder={`Step ${index + 1}`}
+                                    value={step}
+                                    onChange={e => handleInstructionChange(index, e.target.value)}
+                                    onInput={e => {
+                                        const target = e.currentTarget;
+                                        target.style.height = 'auto';
+                                        target.style.height = `${target.scrollHeight}px`;
+                                    }}
+                                    rows={1}
+                                    className="flex-grow w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm text-slate-900 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 resize-none overflow-hidden"
+                                 />
+                                 <button type="button" onClick={() => removeInstruction(index)} className="text-red-500 hover:text-red-700 font-bold text-xl pt-1 dark:text-red-400 dark:hover:text-red-300">&times;</button>
                              </div>
                         ))}
                      </div>

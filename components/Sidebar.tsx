@@ -1,11 +1,12 @@
+
 import React from 'react';
 import type { View } from '../types';
 import { Role } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { 
   DashboardIcon, WalletIcon, InventoryIcon, MealPlannerIcon, 
-  RecipeIcon, SavingsIcon, ReceiptIcon, SettingsIcon, MegaphoneIcon
-} from './icons/IconComponents';
+  RecipeIcon, SavingsIcon, ReceiptIcon, SettingsIcon, MegaphoneIcon, UsersIcon, BillIcon
+} from '../icons/IconComponents';
 
 interface SidebarProps {
   currentView: View;
@@ -41,11 +42,13 @@ const NavLink: React.FC<{
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
   const { user } = useAuth();
-  const canEdit = user.role === Role.Admin || user.role === Role.Editor;
+  const isAdmin = user.role === Role.Admin;
+  const canEdit = isAdmin || user.role === Role.Editor;
 
   const mainNavItems = [
     { view: 'dashboard' as View, label: 'Dashboard', icon: <DashboardIcon className="w-5 h-5" /> },
     { view: 'finance' as View, label: 'Finance', icon: <WalletIcon className="w-5 h-5" /> },
+    { view: 'bills' as View, label: 'Bills', icon: <BillIcon className="w-5 h-5" /> },
     { view: 'inventory' as View, label: 'Inventory', icon: <InventoryIcon className="w-5 h-5" /> },
     { view: 'meal_planner' as View, label: 'Meal Planner', icon: <MealPlannerIcon className="w-5 h-5" /> },
     { view: 'recipes' as View, label: 'Recipes', icon: <RecipeIcon className="w-5 h-5" /> },
@@ -56,6 +59,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView }) => {
   const secondaryNavItems = [
     { view: 'settings' as View, label: 'Settings', icon: <SettingsIcon className="w-5 h-5" /> },
   ];
+
+  if (isAdmin) {
+    secondaryNavItems.push({ view: 'user_management' as View, label: 'User Management', icon: <UsersIcon className="w-5 h-5" /> });
+  }
 
   return (
     <aside className="w-64 bg-white flex-shrink-0 p-4 border-r border-slate-200 flex flex-col print:hidden dark:bg-slate-800 dark:border-slate-700">

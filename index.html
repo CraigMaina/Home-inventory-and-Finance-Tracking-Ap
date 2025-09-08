@@ -31,10 +31,20 @@
       .dark ::-webkit-scrollbar-thumb:hover {
         background: #64748b;
       }
+      /* Hide number input arrows for a cleaner look */
+      input[type=number]::-webkit-inner-spin-button, 
+      input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+      }
+      input[type=number] {
+        -moz-appearance: textfield; /* Firefox */
+      }
       @media print {
         /* Force a light theme for printing to ensure readability */
         body {
           background-color: #ffffff !important;
+          -webkit-print-color-adjust: exact;
         }
         .dark body, body.dark {
           background-color: #ffffff !important;
@@ -54,8 +64,35 @@
         .dark .dark\:bg-slate-700 {
             background-color: transparent !important;
         }
+        
+        /* --- FIX FOR PRINTING LAYOUT --- */
+        /* Hide elements that are not meant for printing */
+        .print\:hidden {
+          display: none !important;
+        }
+        
+        /* Reset layout constraints on root elements to prevent clipping */
+        html, body, #root, .h-screen, .overflow-hidden {
+          height: auto !important;
+          overflow: visible !important;
+          display: block !important;
+        }
+        
+        /* Ensure the main content area is fully visible */
+        main {
+          overflow: visible !important;
+          padding: 0 !important;
+        }
       }
     </style>
+  <script>
+    // On page load or when changing themes, best to add inline in `head` to avoid FOUC
+    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  </script>
   <script type="importmap">
 {
   "imports": {
@@ -63,7 +100,11 @@
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
     "react/": "https://aistudiocdn.com/react@^19.1.1/",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.16.0",
-    "recharts": "https://aistudiocdn.com/recharts@^3.1.2"
+    "recharts": "https://aistudiocdn.com/recharts@^3.1.2",
+    "cors": "https://aistudiocdn.com/cors@^2.8.5",
+    "express": "https://aistudiocdn.com/express@^5.1.0",
+    "pg": "https://aistudiocdn.com/pg@^8.16.3",
+    "dotenv": "https://aistudiocdn.com/dotenv@^17.2.1"
   }
 }
 </script>
