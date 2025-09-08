@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import Card from './Card';
 import Modal from './Modal';
@@ -207,7 +208,7 @@ const MealPlanner: React.FC<MealPlannerProps> = ({ mealPlan, setMealPlan, invent
                 )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {mealPlan.map((dayPlan) => (
                     <Card key={dayPlan.date}>
                         <h4 className="font-bold text-lg text-slate-800 mb-4 dark:text-slate-200">

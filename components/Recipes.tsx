@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import Card from './Card';
 import Modal from './Modal';
@@ -141,7 +142,7 @@ const Recipes: React.FC = () => {
         ))}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredRecipes.length > 0 ? filteredRecipes.map((recipe) => {
             const isExpanded = expandedRecipeId === recipe.recipeId;
             return (

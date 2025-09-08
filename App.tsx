@@ -25,6 +25,7 @@ import SignUp from './components/auth/SignUp';
 // The main application content, only rendered when logged in
 const MainApp: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>('dashboard');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Lifted state for shared data
     const [inventory, setInventory] = useState<InventoryItem[]>(mockInventory);
@@ -90,9 +91,21 @@ const MainApp: React.FC = () => {
     
     return (
         <div className="flex h-screen bg-slate-100 font-sans dark:bg-slate-900 print:block print:h-auto">
-            <Sidebar currentView={currentView} setCurrentView={setCurrentView} />
+            <Sidebar 
+                currentView={currentView} 
+                setCurrentView={setCurrentView}
+                isOpen={isSidebarOpen}
+                setIsOpen={setIsSidebarOpen}
+            />
+             {isSidebarOpen && (
+                <div 
+                    onClick={() => setIsSidebarOpen(false)} 
+                    className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+                    aria-hidden="true"
+                ></div>
+            )}
             <div className="flex-1 flex flex-col overflow-hidden print:overflow-visible">
-                <Header setCurrentView={setCurrentView} />
+                <Header setCurrentView={setCurrentView} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 p-4 sm:p-6 md:p-8 print:overflow-visible print:p-0 print:bg-white dark:bg-slate-900">
                     {renderView()}
                 </main>

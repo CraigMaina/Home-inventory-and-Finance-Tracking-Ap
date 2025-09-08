@@ -1,4 +1,5 @@
-import type { Request, Response } from 'express';
+
+import { Request, Response } from 'express';
 import db from '../../config/db';
 import { Recipe } from '../../types';
 

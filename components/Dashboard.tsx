@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Card from './Card';
 import { mockTransactions, mockFinanceCategories } from '../constants';
@@ -48,7 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveView, inventory }) => {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">Welcome back, {user.name.split(' ')[0]}!</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="flex items-center space-x-4">
             <div className="bg-green-100 p-3 rounded-full"><WalletIcon className="w-6 h-6 text-green-600" /></div>
             <div>

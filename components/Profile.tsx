@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import Card from './Card';
 import { useAuth } from '../contexts/AuthContext';
@@ -39,7 +40,7 @@ const Profile: React.FC = () => {
             <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">My Profile</h1>
             <Card>
                 <form onSubmit={handleSaveChanges} className="space-y-8">
-                    <div className="flex items-center space-x-6">
+                    <div className="flex flex-col items-start sm:flex-row sm:items-center sm:space-x-6 space-y-4 sm:space-y-0">
                         <img src={avatarPreview || 'https://picsum.photos/seed/placeholder/100/100'} alt="User Avatar" className="w-24 h-24 rounded-full object-cover" />
                         <div>
                             <label htmlFor="avatar-upload" className="cursor-pointer bg-slate-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-700 transition-colors dark:bg-indigo-600 dark:hover:bg-indigo-500">

@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Role, View } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,9 +20,10 @@ const getRoleDisplayName = (role: Role) => {
 
 interface HeaderProps {
     setCurrentView: (view: View) => void;
+    toggleSidebar: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ setCurrentView }) => {
+const Header: React.FC<HeaderProps> = ({ setCurrentView, toggleSidebar }) => {
   const { user, logout } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -50,7 +52,21 @@ const Header: React.FC<HeaderProps> = ({ setCurrentView }) => {
   }
 
   return (
-    <header className="bg-white h-16 flex items-center justify-end px-8 border-b border-slate-200 print:hidden dark:bg-slate-800 dark:border-slate-700">
+    <header className="bg-white h-16 flex items-center justify-between px-4 sm:px-8 border-b border-slate-200 print:hidden dark:bg-slate-800 dark:border-slate-700">
+      {/* Hamburger Menu for mobile */}
+      <button 
+        onClick={toggleSidebar} 
+        className="lg:hidden text-slate-500 hover:text-slate-800 focus:outline-none dark:text-slate-400 dark:hover:text-slate-200"
+        aria-label="Open menu"
+      >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+      </button>
+
+      {/* This div is just a spacer for non-mobile views to keep the user dropdown to the right */}
+      <div className="hidden lg:block flex-1"></div>
+      
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -61,7 +77,7 @@ const Header: React.FC<HeaderProps> = ({ setCurrentView }) => {
             alt={user.name}
             className="w-10 h-10 rounded-full object-cover border-2 border-slate-200"
           />
-          <div className="text-right">
+          <div className="text-right hidden sm:block">
             <p className="font-semibold text-slate-700 dark:text-slate-200">{user.name}</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">{getRoleDisplayName(user.role)}</p>
           </div>

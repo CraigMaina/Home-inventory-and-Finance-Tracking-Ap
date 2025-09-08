@@ -1,4 +1,5 @@
-import type { Request, Response } from 'express';
+
+import { Request, Response } from 'express';
 import { GoogleGenAI, Type } from "@google/genai";
 import { ParsedReceipt } from '../../types';
 

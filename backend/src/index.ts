@@ -1,4 +1,5 @@
-import express from 'express';
+
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import api from './api';
@@ -16,7 +17,7 @@ app.use(express.json());
 app.use('/api', api);
 
 // Health check route
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
   res.send('Household API is running!');
 });
 
