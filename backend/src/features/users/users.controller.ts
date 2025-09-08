@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { Role } from '../../types';
 
 export const getCurrentUser = async (req: Request, res: Response) => {

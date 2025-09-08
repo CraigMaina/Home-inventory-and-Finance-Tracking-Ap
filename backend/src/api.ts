@@ -6,6 +6,7 @@ import savingsRoutes from './features/savings/savings.routes';
 import announcementRoutes from './features/announcements/announcements.routes';
 import userRoutes from './features/users/users.routes';
 import mealPlanRoutes from './features/mealPlans/mealPlans.routes';
+import scannerRoutes from './features/ai/scanner.routes';
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use('/savings', savingsRoutes);
 router.use('/announcements', announcementRoutes);
 router.use('/users', userRoutes);
 router.use('/meal-plans', mealPlanRoutes);
+router.use('/scanner', scannerRoutes);
 
 
 export default router;

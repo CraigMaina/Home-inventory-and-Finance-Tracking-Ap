@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import db from '../../config/db';
 
 export const getMealPlan = async (req: Request, res: Response) => {

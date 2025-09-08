@@ -1,21 +1,17 @@
 import React, { useState, useCallback } from 'react';
 import Card from '../components/Card';
-import { parseReceiptWithGemini } from '../services/geminiService';
 import type { ParsedReceipt } from '../types';
 import { Role } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { SparklesIcon, ReceiptIcon } from './IconComponents';
 
-const fileToGenerativePart = async (file: File) => {
-    const base64EncodedDataPromise = new Promise<string>((resolve) => {
+const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
       reader.readAsDataURL(file);
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = error => reject(error);
     });
-    return {
-      base64: await base64EncodedDataPromise,
-      mimeType: file.type
-    };
 };
 
 const ReceiptParser: React.FC = () => {
@@ -37,9 +33,25 @@ const ReceiptParser: React.FC = () => {
         setImagePreview(URL.createObjectURL(file));
 
         try {
-            const { base64, mimeType } = await fileToGenerativePart(file);
-            const result = await parseReceiptWithGemini(base64, mimeType);
+            const base64 = await fileToBase64(file);
+            const mimeType = file.type;
+
+            const response = await fetch('/api/scanner/scan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ imageBase64: base64, mimeType: mimeType }),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `Request failed with status ${response.status}`);
+            }
+
+            const result = await response.json();
             setParsedData(result);
+
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unknown error occurred.');
         } finally {
